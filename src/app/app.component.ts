@@ -1,33 +1,46 @@
-import { Component, ComponentFactoryResolver, OnInit, ViewChild } from '@angular/core';
-import { DynamicDirective } from './dynamic.directive';
-import { LoadComponentService } from './load-component.service';
-import { DynamicComponent } from './dynamic/dynamic.component';
-import { Dynamic2Component } from './dynamic2/dynamic2.component';
-import { Dynamic3Component } from './dynamic3/dynamic3.component';
+import { Component, Type, ViewChild, ViewContainerRef } from '@angular/core';
+import { CommonModule } from '@angular/common';
+import { RouterOutlet } from '@angular/router';
+
+import { BehaviorSubject, Observable, switchMap, tap } from 'rxjs';
+
+import { ComponentResolverService } from './component-resolver.service';
 
 @Component({
   selector: 'app-root',
+  standalone: true,
+  imports: [CommonModule, RouterOutlet],
   templateUrl: './app.component.html',
-  styleUrls: ['./app.component.scss']
+  styleUrls: ['./app.component.scss'],
 })
-export class AppComponent implements OnInit {
-  
-  title = 'AppComponent';
-  compArray = [DynamicComponent, Dynamic2Component, Dynamic3Component]
+export class AppComponent {
+  @ViewChild('componentContainer', { read: ViewContainerRef, static: true })
+  componentContainer: ViewContainerRef | undefined;
 
-  @ViewChild(DynamicDirective, { static: true }) dynamicDirective!: DynamicDirective;
+  currentVehicle$ = new BehaviorSubject<'car' | 'motorbike'>('car');
+  component$ = this.getComponent();
 
-  constructor(private loadComponentService: LoadComponentService) { }
+  constructor(private componentResolverService: ComponentResolverService) {}
 
-  ngOnInit(): void { }
-
-
-  public loadDynamicComponent(event: any) {
-    // Get a random component
-    const item = this.compArray[Math.floor(Math.random()*this.compArray.length)];
-
-    const containerRef = this.dynamicDirective.viewContainerRef;
-    this.loadComponentService.load(containerRef, item);
+  onVehicleToogle(): void {
+    const nextVehicle =
+      this.currentVehicle$.getValue() === 'car' ? 'motorbike' : 'car';
+    this.currentVehicle$.next(nextVehicle);
   }
 
+  getComponent(): Observable<Type<unknown>> {
+    return this.currentVehicle$.pipe(
+      switchMap((currentVehicle) => {
+        return this.componentResolverService.getComponentType(currentVehicle);
+      }),
+      tap((componentType) => {
+        const viewContainerRef = this.componentContainer;
+        viewContainerRef?.clear();
+
+        const componentRef =
+          viewContainerRef?.createComponent<unknown>(componentType);
+        componentRef?.setInput('title', this.currentVehicle$.getValue());
+      })
+    );
+  }
 }

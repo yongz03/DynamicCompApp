@@ -5,18 +5,22 @@ import { AppRoutingModule } from './app-routing.module';
 import { AppComponent } from './app.component';
 import { DynamicComponent } from './dynamic/dynamic.component';
 import { DynamicDirective } from './dynamic.directive';
+import { MotorbikeComponent } from './motorbike/motorbike.component';
+import { CarComponent } from './car/car.component';
 
 @NgModule({
   declarations: [
-    AppComponent,
     DynamicComponent,
-    DynamicDirective
+    DynamicDirective,
   ],
   imports: [
     BrowserModule,
-    AppRoutingModule
+    AppRoutingModule,
+    AppComponent,
+    MotorbikeComponent,
+    CarComponent
   ],
   providers: [],
-  bootstrap: [AppComponent]
+  bootstrap: [],
 })
 export class AppModule { }

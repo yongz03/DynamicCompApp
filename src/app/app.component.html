@@ -1,7 +1,15 @@
-<div style="width:500px; height:300px; background-color:yellow">
-  <h1>{{title}}</h1>
-  <button (click)="loadDynamicComponent($event)">Change Component</button>
-
-  <ng-template dynamicDirective></ng-template>
-  
-</div>
+<header><h1 class="title">Vehicles</h1></header>
+<article>
+  <header class="bodyHeader">
+    <button
+      *ngIf="component$ | async"
+      type="button"
+      class="button"
+      (click)="onVehicleToogle()"
+    >
+      Toogle Vehicle
+    </button>
+  </header>
+  <section><ng-container #componentContainer></ng-container></section>
+</article>
+<footer></footer>
